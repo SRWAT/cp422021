@@ -1,6 +1,26 @@
 <script setup>
 import InfoCard from "@/components/cards/InfoCard.vue";
+import TableInfoCard from "@/components/cards/TableInfoCard.vue";
+import { useTableStore } from '@/store/table';
+
+const tableStore = useTableStore();
+
+const reserveTable = (table) => {
+  table.status = 'Reserve'
+  table.checkin = new Date().toLocaleTimeString();
+  selectedTableId.value = table.id;
+};
+
+const resetTable = (table) => {
+  table.status = 'Ready';
+  table.checkin = null;
+  // ถ้ามี field เช่น table.users หรือ table.total ก็รีเซ็ตได้:
+  table.users = 0;
+  table.total = 0;
+};
+
 </script>
+
 <template>
   <VCard>
     <VCardItem>
@@ -54,16 +74,24 @@ import InfoCard from "@/components/cards/InfoCard.vue";
   <VCard class="mt-8">
     <VCardText>
 <VRow>
-    <VCol cols="3" v-for="n in 10":key="n">
+    <VCol v-for="table in tableStore.tables" :key ="table.id" cols="3" >
+    <template v-if="table.status === 'Reserve'">
+        <TableInfoCard :table="table" @pay="resetTable(table)"/>
+    </template>
+
+    <template v-else>
         <VBtn
+          @click="reserveTable(table)"
+          size= "x-large" 
           color="primary"
           block
-         height="150"
+          height="200"
           class="text-h6"
         >
           <VIcon left class="mr-2" size="40">mdi-table-chair</VIcon>
-          โต๊ะที่ {{ n }}
+          {{ table.name }} - {{ table.status }}
         </VBtn>
+      </template>
     </VCol>
             
  </VRow>

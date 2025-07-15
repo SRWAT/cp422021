@@ -14,7 +14,7 @@ export const routes = [
       },
       {
         path: 'menu',
-        component: () => import('@/pages/queue.vue'),
+        component: () => import('@/pages/menu.vue'),
       },
       {
         path: 'stock',
