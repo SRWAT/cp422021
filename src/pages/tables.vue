@@ -1,26 +1,25 @@
 <script setup>
 import InfoCard from "@/components/cards/InfoCard.vue";
 import TableInfoCard from "@/components/cards/TableInfoCard.vue";
-import { useTableStore } from '@/store/table';
 
+import { useTableStore } from "@/store/table";
+import { computed } from "vue";
 const tableStore = useTableStore();
 
 const reserveTable = (table) => {
-  table.status = 'Reserve'
-  table.checkin = new Date().toLocaleTimeString();
-  selectedTableId.value = table.id;
+  table.status = 'reserve'
+  table.checkin = (new Date()).toLocaleTimeString()
 };
 
-const resetTable = (table) => {
-  table.status = 'Ready';
-  table.checkin = null;
-  // ถ้ามี field เช่น table.users หรือ table.total ก็รีเซ็ตได้:
-  table.users = 0;
-  table.total = 0;
-};
+const availableTable = computed(() => {
+  return tableStore.tables.filter((table)=> table.status == 'ready')
+});
+
+const reservedTable = computed(() => {
+  return tableStore.tables.filter((table)=> table.status == 'reserve')
+});
 
 </script>
-
 <template>
   <VCard>
     <VCardItem>
@@ -31,7 +30,7 @@ const resetTable = (table) => {
         <VCol cols="3">
           <InfoCard
             title="โต๊ะทั้งหมด"
-            :stats="10"
+            :stats="tableStore.tables.length"
             unit="ตัว"
             icon="mdi-table"
             color="primary"
@@ -40,7 +39,7 @@ const resetTable = (table) => {
         <VCol cols="3">
           <InfoCard
             title="โต๊ะว่าง"
-            :stats="5"
+            :stats="availableTable.length"
             unit="ตัว"
             icon="mdi-table-plus"
             color="success"
@@ -49,7 +48,7 @@ const resetTable = (table) => {
         <VCol cols="3">
           <InfoCard
             title="ใช้งานอยู่"
-            :stats="5"
+            :stats="reservedTable.length"
             unit="ตัว"
             icon="mdi-table-account"
             color="warning"
@@ -73,28 +72,14 @@ const resetTable = (table) => {
   </VCard>
   <VCard class="mt-8">
     <VCardText>
-<VRow>
-    <VCol v-for="table in tableStore.tables" :key ="table.id" cols="3" >
-    <template v-if="table.status === 'Reserve'">
-        <TableInfoCard :table="table" @pay="resetTable(table)"/>
-    </template>
-
-    <template v-else>
-        <VBtn
-          @click="reserveTable(table)"
-          size= "x-large" 
-          color="primary"
-          block
-          height="200"
-          class="text-h6"
-        >
-          <VIcon left class="mr-2" size="40">mdi-table-chair</VIcon>
-          {{ table.name }} - {{ table.status }}
-        </VBtn>
-      </template>
-    </VCol>
-            
- </VRow>
+      <VRow>
+        <VCol v-for="table in tableStore.tables" cols="3" class="d-flex align-center justify-center">
+          <v-btn v-if="table.status=='ready'" @click="reserveTable(table)" size="x-large" block prepend-icon="mdi-table" height="200">            
+            {{ table.name }} - {{ table.status }}
+          </v-btn>
+          <TableInfoCard v-else :table="table"/>
+        </VCol>          
+      </VRow>
     </VCardText>
   </VCard>
 </template>
